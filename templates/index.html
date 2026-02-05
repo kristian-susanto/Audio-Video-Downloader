@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Downloader Pro</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <style>
+      .progress-container {
+        display: none;
+        margin-top: 20px;
+        border: 1px solid #ddd;
+        padding: 15px;
+        border-radius: 5px;
+      }
+      progress {
+        width: 100%;
+        height: 20px;
+      }
+      #status {
+        font-weight: bold;
+        color: #333;
+      }
+    </style>
+  </head>
+  <body>
+    <div style="width: 450px; margin: 50px auto; font-family: sans-serif">
+      <h2>Audio/Video Downloader</h2>
+      <div id="inputForm">
+        <input
+          type="text"
+          id="videoUrl"
+          placeholder="Masukkan URL YouTube..."
+          style="width: 100%; padding: 10px; box-sizing: border-box"
+        />
+        <select id="quality" style="width: 100%; margin: 10px 0; padding: 10px">
+          <option value="bestaudio">Audio MP3 (Terbaik)</option>
+          <option value="best">Video + Audio (Default)</option>
+        </select>
+        <button
+          onclick="startDownload()"
+          style="
+            width: 100%;
+            padding: 10px;
+            background: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+          "
+        >
+          Mulai Proses
+        </button>
+      </div>
+
+      <div class="progress-container" id="progressDiv">
+        <p>Status: <span id="status">Menunggu server...</span></p>
+        <progress id="progressBar" value="0" max="100"></progress>
+        <div style="display: flex; justify-content: space-between">
+          <span id="percentText">0%</span>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const socket = io();
+
+      async function startDownload() {
+        const url = document.getElementById("videoUrl").value;
+        const quality = document.getElementById("quality").value;
+
+        if (!url) return alert("Masukkan URL!");
+
+        // Reset UI
+        document.getElementById("progressDiv").style.display = "block";
+        document.getElementById("status").innerText = "Memulai koneksi...";
+        document.getElementById("progressBar").value = 0;
+
+        // Kirim request ke server tanpa reload halaman
+        const response = await fetch("/process", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url: url, quality: quality }),
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          document.getElementById("status").innerText =
+            "Selesai! Mengunduh ke komputer...";
+          // Redirect ke endpoint download untuk memicu download browser
+          window.location.href = `/download/${result.filename}`;
+        } else {
+          alert("Error: " + result.error);
+          document.getElementById("status").innerText = "Gagal.";
+        }
+      }
+
+      socket.on("progress", function (data) {
+        let p = parseFloat(data.percentage);
+        document.getElementById("progressBar").value = p;
+        document.getElementById("percentText").innerText = p + "%";
+
+        if (data.status === "downloading") {
+          document.getElementById("status").innerText =
+            "Sedang Mengunduh dari YouTube...";
+        } else if (data.status === "finished") {
+          document.getElementById("status").innerText =
+            "Proses Server Selesai! Menyiapkan file...";
+        }
+      });
+    </script>
+  </body>
+</html>

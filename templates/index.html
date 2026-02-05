@@ -2,123 +2,201 @@
 <html lang="id">
   <head>
     <meta charset="UTF-8" />
-    <title>Downloader Pro</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Audio Downloader</title>
     <style>
-      .progress-container {
-        display: none;
-        margin-top: 20px;
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        text-align: center;
+        background-color: #f4f4f4;
+        padding-top: 50px;
+      }
+      .container {
+        background: white;
+        padding: 2rem;
+        border-radius: 10px;
+        display: inline-block;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        max-width: 500px;
+        width: 90%;
+      }
+      input {
+        width: 80%;
+        padding: 12px;
+        margin-bottom: 20px;
         border: 1px solid #ddd;
-        padding: 15px;
         border-radius: 5px;
       }
-      progress {
-        width: 100%;
-        height: 20px;
+      #preview-container {
+        margin-top: 20px;
+        display: none;
       }
-      #status {
+      iframe,
+      img {
+        width: 100%;
+        border-radius: 8px;
+        margin-bottom: 15px;
+      }
+      button {
+        padding: 12px 25px;
+        cursor: pointer;
+        background: #cc0000;
+        color: white;
+        border: none;
+        border-radius: 5px;
         font-weight: bold;
-        color: #333;
+      }
+      button:hover {
+        background: #aa0000;
+      }
+      .loading {
+        display: none;
+        color: #666;
+        margin-top: 10px;
       }
     </style>
   </head>
   <body>
-    <div style="width: 450px; margin: 50px auto; font-family: sans-serif">
-      <h2>Audio/Video Downloader</h2>
-      <div id="inputForm">
-        <input
-          type="text"
-          id="videoUrl"
-          placeholder="Masukkan URL YouTube..."
-          style="width: 100%; padding: 10px; box-sizing: border-box"
-        />
-        <select id="quality" style="width: 100%; margin: 10px 0; padding: 10px">
-          <optgroup label="Video">
-            <option value="best">Video + Audio (Kualitas Terbaik)</option>
-          </optgroup>
-          <optgroup label="Audio MP3">
-            <option value="64">Audio MP3 - 64 kbps (Hemat Kuota)</option>
-            <option value="128">Audio MP3 - 128 kbps (Standar)</option>
-            <option value="192">Audio MP3 - 192 kbps (Bagus)</option>
-            <option value="256">Audio MP3 - 256 kbps (Sangat Bagus)</option>
-            <option value="320">Audio MP3 - 320 kbps (High Quality)</option>
-          </optgroup>
-          <optgroup label="Lossless (Kualitas Studio)">
-            <option value="wav">WAV (Uncompressed)</option>
-            <option value="flac">FLAC (Lossless)</option>
-          </optgroup>
-        </select>
-        <button
-          onclick="startDownload()"
-          style="
-            width: 100%;
-            padding: 10px;
-            background: #007bff;
-            color: white;
-            border: none;
-            cursor: pointer;
-          "
-        >
-          Mulai Proses
-        </button>
-      </div>
+    <div class="container">
+      <h1>Audio Downloader</h1>
+      <input
+        type="text"
+        id="urlInput"
+        placeholder="Tempel link di sini..."
+        oninput="handleUrlChange()"
+      />
 
-      <div class="progress-container" id="progressDiv">
-        <p>Status: <span id="status">Menunggu server...</span></p>
-        <progress id="progressBar" value="0" max="100"></progress>
-        <div style="display: flex; justify-content: space-between">
-          <span id="percentText">0%</span>
+      <div id="preview-container">
+        <div id="media-content"></div>
+        <form action="/download" method="post" onsubmit="showLoading()">
+          <input type="hidden" name="url" id="formUrl" />
+          <button type="submit">Konversi ke MP3</button>
+        </form>
+        <div id="loadingMsg" class="loading">
+          Sedang memproses audio... Mohon tunggu.
         </div>
       </div>
     </div>
 
     <script>
-      const socket = io();
-
-      async function startDownload() {
-        const url = document.getElementById("videoUrl").value;
-        const quality = document.getElementById("quality").value;
-
-        if (!url) return alert("Masukkan URL!");
-
-        // Reset UI
-        document.getElementById("progressDiv").style.display = "block";
-        document.getElementById("status").innerText = "Memulai koneksi...";
-        document.getElementById("progressBar").value = 0;
-
-        // Kirim request ke server tanpa reload halaman
-        const response = await fetch("/process", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ url: url, quality: quality }),
-        });
-
-        const result = await response.json();
-
-        if (result.success) {
-          document.getElementById("status").innerText =
-            "Selesai! Mengunduh ke komputer...";
-          // Redirect ke endpoint download untuk memicu download browser
-          window.location.href = `/download/${result.filename}`;
-        } else {
-          alert("Error: " + result.error);
-          document.getElementById("status").innerText = "Gagal.";
+      function isValidUrl(string) {
+        try {
+          new URL(string);
+          return true;
+        } catch (_) {
+          return false;
         }
       }
 
-      socket.on("progress", function (data) {
-        let p = parseFloat(data.percentage);
-        document.getElementById("progressBar").value = p;
-        document.getElementById("percentText").innerText = p + "%";
+      async function handleUrlChange() {
+        const url = document.getElementById("urlInput").value.trim();
+        const previewContainer = document.getElementById("preview-container");
+        const mediaContent = document.getElementById("media-content");
+        const formUrl = document.getElementById("formUrl");
 
-        if (data.status === "downloading") {
-          document.getElementById("status").innerText =
-            "Sedang Mengunduh dari YouTube...";
-        } else if (data.status === "finished") {
-          document.getElementById("status").innerText =
-            "Proses Server Selesai! Menyiapkan file...";
+        if (url.startsWith("http")) {
+          previewContainer.style.display = "block";
+          formUrl.value = url;
+          mediaContent.innerHTML = "<p>Sedang mengambil preview...</p>";
+
+          try {
+            const response = await fetch("/get_info", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ url: url }),
+            });
+            const data = await response.json();
+
+            // 1. Logika Thumbnail Anti-Pecah (Proxy Sederhana via Google)
+            // Instagram sering memblokir hotlink, kita gunakan layanan favicon/images-weserv sebagai proxy
+            let secureThumbnail = data.thumbnail;
+            if (data.platform === "instagram") {
+              secureThumbnail = `https://images.weserv.nl/?url=${encodeURIComponent(data.thumbnail)}`;
+            }
+
+            let mediaHtml = "";
+
+            // 2. Tampilkan Thumbnail saja untuk semua (termasuk YouTube)
+            // agar tidak ada kotak hitam "Video tidak tersedia"
+            if (data.thumbnail) {
+              mediaHtml = `
+                    <div style="width:100%; max-width:450px; margin: 0 auto 15px auto; position:relative;">
+                        <img src="${secureThumbnail}" 
+                             alt="Preview"
+                             style="width:100%; border-radius:12px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); display:block; min-height:150px; background:#eee;"
+                             onerror="this.src='https://placehold.co/600x400?text=Preview+Tersedia'">
+                    </div>`;
+            }
+
+            // 3. Tampilkan Caption/Judul dan Platform
+            let displayTitle = data.title;
+
+            // Jika platform adalah Instagram, gunakan description (caption)
+            // Jika description kosong, baru gunakan title default
+            if (data.platform === "instagram") {
+              displayTitle =
+                data.description && data.description.trim() !== ""
+                  ? data.description
+                  : "Instagram Post";
+
+              // Opsional: Batasi panjang caption agar tidak terlalu panjang di preview
+              if (displayTitle.length > 150) {
+                displayTitle = displayTitle.substring(0, 147) + "...";
+              }
+            }
+
+            mediaContent.innerHTML = `
+              <div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
+                  ${mediaHtml}
+                  
+                  <h3 style="font-size: 16px; margin: 5px 0 15px 0; padding: 0 15px; color: #333; line-height: 1.4; font-weight: 500;">
+                      ${displayTitle}
+                  </h3>
+                  
+                  <span style="font-size:12px; color:white; background:#666; padding:5px 15px; border-radius:20px; font-weight: bold;">
+                      Platform: ${data.platform.charAt(0).toUpperCase() + data.platform.slice(1)}
+                  </span>
+
+                  <div style="margin-bottom: 25px;"></div>
+              </div>
+          `;
+          } catch (error) {
+            mediaContent.innerHTML =
+              "<p style='color:red;'>Gagal memuat preview. Link mungkin tidak didukung.</p>";
+          }
+        } else {
+          previewContainer.style.display = "none";
         }
-      });
+      }
+
+      function showLoading() {
+        const btn = document.querySelector('button[type="submit"]');
+        const loadingMsg = document.getElementById("loadingMsg");
+
+        // Ubah status tombol
+        btn.disabled = true;
+        btn.innerText = "Memproses...";
+        btn.style.background = "#888";
+        loadingMsg.style.display = "block";
+        loadingMsg.innerHTML = "Sedang memproses audio... Mohon tunggu.";
+
+        // Trik: Gunakan interval untuk mengecek apakah file mulai diunduh
+        // Karena browser tidak memberi tahu kapan download 'selesai',
+        // kita beri feedback sukses setelah jeda waktu masuk akal.
+        setTimeout(() => {
+          btn.disabled = false;
+          btn.innerText = "Konversi Selesai! Klik lagi untuk yang lain";
+          btn.style.background = "#28a745"; // Hijau sukses
+          loadingMsg.innerHTML = "File sedang dikirim ke browser Anda.";
+
+          // Sembunyikan pesan setelah 5 detik
+          setTimeout(() => {
+            loadingMsg.style.display = "none";
+            btn.innerText = "Konversi ke MP3";
+            btn.style.background = "#cc0000";
+          }, 5000);
+        }, 8000); // Estimasi 8 detik (bisa disesuaikan)
+      }
     </script>
   </body>
 </html>

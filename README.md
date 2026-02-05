@@ -6,7 +6,9 @@ An efficient and responsive Flask-based web application that allows users to dow
 
 - **Platform Support:** Download content from YouTube, Instagram, and other major platforms supported by yt-dlp.
 - **Audio & Video Formats: \* MP3:** High-quality 192kbps audio extraction.
-- **MP4:** Downloads the best available video and audio merged.
+
+* **MP4:** Downloads the best available video and audio merged.
+
 - **Smart Metadata:** Automatically extracts video titles or Instagram captions to use as filenames.
 - **Live Preview:** Fetches thumbnails and titles/descriptions before you start the download.
 - **Dark Mode Support:** Toggle between light and dark themes with persistent settings.
@@ -31,7 +33,7 @@ Audio-Video-Downloader/
 
 Ensure you have **FFmpeg** installed on your system, as it is required for audio conversion and video merging.
 
-- **Windows**: Install via Chocolatey or download the builds.
+- **Windows**: Install via [FFmpeg](https://www.ffmpeg.org/), [Gyan Doshi](https://www.gyan.dev/ffmpeg/builds/), [Chocolatey](https://chocolatey.org/), or download the builds.
 - **Mac**: `brew install ffmpeg`
 - **Linux**: `sudo apt install ffmpeg`
 
@@ -48,8 +50,8 @@ It is recommended to use a virtual environment:
 
 ```bash
 python -m venv venv
-source venv/bin/activate # Mac/Linux
-venv\Scripts\activate # Windows
+source venv/bin/activate    # Mac/Linux
+venv\Scripts\activate       # Windows
 ```
 
 Once the virtual environment is active, install all dependencies in one of the following ways:

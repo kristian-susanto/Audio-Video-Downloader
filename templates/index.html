@@ -368,8 +368,8 @@
                   : "Instagram Post";
 
               // Opsional: Batasi panjang caption agar tidak terlalu panjang di preview
-              if (displayTitle.length > 150) {
-                displayTitle = displayTitle.substring(0, 147) + "...";
+              if (displayTitle.length > 200) {
+                displayTitle = displayTitle.substring(0, 197) + "...";
               }
             }
 
@@ -399,7 +399,7 @@
         btn.style.background = "#888";
         loadingMsg.style.display = "block";
         loadingMsg.innerHTML =
-          "♻️ Sedang memproses file besar, mohon tunggu beberapa saat...";
+          "⌛ Sedang memproses file besar, mohon tunggu beberapa saat...";
 
         setTimeout(() => {
           btn.disabled = false;

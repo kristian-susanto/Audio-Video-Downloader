@@ -72,7 +72,7 @@ def download():
                 # 1. Hapus newline (\n) dan carriage return (\r) lalu ganti dengan spasi
                 raw_title = raw_title.replace('\n', ' ').replace('\r', ' ')
                 # 2. Hapus karakter terlarang lainnya
-                clean_title = sanitize_filename(raw_title[:150].strip())
+                clean_title = sanitize_filename(raw_title[:200].strip())
             else:
                 clean_title = "audio_download"
 
@@ -137,7 +137,7 @@ def download_video():
                 # 1. Hapus newline (\n) dan carriage return (\r) lalu ganti dengan spasi
                 raw_title = raw_title.replace('\n', ' ').replace('\r', ' ')
                 # 2. Hapus karakter terlarang lainnya
-                clean_title = sanitize_filename(raw_title[:150].strip())
+                clean_title = sanitize_filename(raw_title[:200].strip())
             else:
                 clean_title = "video_download"
 

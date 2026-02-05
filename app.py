@@ -50,6 +50,29 @@ def download():
         return "URL tidak boleh kosong!", 400
 
     try:
+        # 1. Ambil info terlebih dahulu untuk menentukan nama file dari caption
+        ydl_info_opts = {
+            'quiet': True,
+            'no_warnings': True,
+        }
+        
+        with yt_dlp.YoutubeDL(ydl_info_opts) as ydl:
+            info = ydl.extract_info(url, download=False)
+            platform = info.get('extractor_key', '').lower()
+            video_id = info.get('id')
+            
+            # LOGIKA PENAMAAN FILE:
+            # Jika Instagram, prioritaskan 'description' (caption) daripada 'title'
+            if 'instagram' in platform:
+                raw_title = info.get('description') or info.get('title')
+            else:
+                raw_title = info.get('title')
+
+            # Bersihkan teks (ambil 50 karakter pertama agar tidak terlalu panjang)
+            # dan hapus karakter terlarang
+            clean_title = sanitize_filename(raw_title[:50].strip()) if raw_title else "audio_download"
+
+        # 2. Proses Download
         ydl_opts = {
             'format': 'bestaudio/best',
             'postprocessors': [{
@@ -57,23 +80,16 @@ def download():
                 'preferredcodec': 'mp3',
                 'preferredquality': '192',
             }],
-            # Gunakan penamaan yang lebih aman untuk platform non-youtube
-            'outtmpl': os.path.join(DOWNLOAD_FOLDER, '%(id)s.%(ext)s'),
+            'outtmpl': os.path.join(DOWNLOAD_FOLDER, f'{video_id}.%(ext)s'),
             'quiet': True,
-            'noplaylist': True, # Pastikan tidak download satu playlist jika linknya playlist
+            'noplaylist': True,
         }
 
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            info = ydl.extract_info(url, download=True)
-            video_title = info.get('title', 'audio_download')
-            video_id = info.get('id')
+            ydl.download([url])
             
-            # Cari file yang dihasilkan (yt-dlp mungkin mengubah ekstensi ke mp3)
-            # Kita cari file di folder downloads yang mengandung video_id dan berakhiran .mp3
             actual_filename = f"{video_id}.mp3"
             temp_file_path = os.path.join(DOWNLOAD_FOLDER, actual_filename)
-            
-            safe_title = sanitize_filename(video_title)
 
         @after_this_request
         def remove_file(response):
@@ -87,7 +103,7 @@ def download():
         return send_file(
             temp_file_path, 
             as_attachment=True, 
-            download_name=f"{safe_title}.mp3",
+            download_name=f"{clean_title}.mp3",
             mimetype="audio/mpeg"
         )
 

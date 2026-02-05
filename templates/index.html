@@ -3,100 +3,186 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Audio Downloader</title>
+    <title>Multi Downloader</title>
     <style>
       body {
         font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
         text-align: center;
-        background-color: #f4f4f4;
+        background-color: #f0f2f5;
         padding-top: 50px;
       }
       .container {
         background: white;
         padding: 2rem;
-        border-radius: 10px;
+        border-radius: 15px;
         display: inline-block;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
         max-width: 500px;
         width: 90%;
       }
+      /* Tab Styling */
+      .tabs {
+        display: flex;
+        margin-bottom: 20px;
+        border-bottom: 2px solid #eee;
+      }
+      .tab-btn {
+        flex: 1;
+        padding: 12px;
+        cursor: pointer;
+        background: none;
+        border: none;
+        font-weight: bold;
+        color: #666;
+        transition: 0.3s;
+      }
+      .tab-btn.active {
+        color: #cc0000;
+        border-bottom: 2px solid #cc0000;
+      }
+      .tab-content {
+        display: none;
+        padding-top: 20px; /* Memberikan jarak antara info video dan tombol */
+      }
+
+      .tab-content.active {
+        display: block;
+      }
+
       input {
-        width: 80%;
+        width: 85%;
         padding: 12px;
         margin-bottom: 20px;
-        border: 1px solid #ddd;
-        border-radius: 5px;
+        border: 2px solid #eee;
+        border-radius: 8px;
+        outline: none;
       }
+      input:focus {
+        border-color: #cc0000;
+      }
+
       #preview-container {
         margin-top: 20px;
         display: none;
       }
-      iframe,
       img {
         width: 100%;
-        border-radius: 8px;
+        border-radius: 12px;
         margin-bottom: 15px;
       }
-      button {
+
+      button.dl-btn {
         padding: 12px 25px;
         cursor: pointer;
-        background: #cc0000;
+        width: 100%;
         color: white;
         border: none;
-        border-radius: 5px;
+        border-radius: 8px;
         font-weight: bold;
+        font-size: 16px;
+        margin-bottom: 10px; /* Jarak tambahan di bawah tombol */
       }
-      button:hover {
-        background: #aa0000;
+      .btn-audio {
+        background: #cc0000;
       }
+      .btn-video {
+        background: #007bff;
+      }
+
       .loading {
         display: none;
         color: #666;
-        margin-top: 10px;
+        margin-top: 15px;
+        font-size: 14px;
+      }
+
+      /* Tambahkan ini agar judul panjang tetap terlihat rapi dan tidak terpotong */
+      #media-content h3 {
+        display: block;
+        word-wrap: break-word; /* Memastikan kata panjang tidak keluar box */
+        overflow: visible;
+        height: auto;
+        max-height: none;
       }
     </style>
   </head>
   <body>
     <div class="container">
-      <h1>Audio Downloader</h1>
+      <h1 style="margin-top: 0">All-in-One Downloader</h1>
+
+      <div class="tabs">
+        <button
+          class="tab-btn active"
+          onclick="openTab(event, 'audio-section')"
+        >
+          🎵 Audio (MP3)
+        </button>
+        <button class="tab-btn" onclick="openTab(event, 'video-section')">
+          🎥 Video (MP4)
+        </button>
+      </div>
+
       <input
         type="text"
         id="urlInput"
-        placeholder="Tempel link di sini..."
+        placeholder="Tempel link video/post di sini..."
         oninput="handleUrlChange()"
       />
 
       <div id="preview-container">
         <div id="media-content"></div>
-        <form action="/download" method="post" onsubmit="showLoading()">
-          <input type="hidden" name="url" id="formUrl" />
-          <button type="submit">Konversi ke MP3</button>
-        </form>
-        <div id="loadingMsg" class="loading">
-          Sedang memproses audio... Mohon tunggu.
+
+        <div id="audio-section" class="tab-content active">
+          <form
+            action="/download"
+            method="post"
+            onsubmit="showLoading('audio')"
+          >
+            <input type="hidden" name="url" class="formUrl" />
+            <button type="submit" class="dl-btn btn-audio" id="btn-audio">
+              Konversi ke MP3
+            </button>
+          </form>
         </div>
+
+        <div id="video-section" class="tab-content">
+          <form
+            action="/download_video"
+            method="post"
+            onsubmit="showLoading('video')"
+          >
+            <input type="hidden" name="url" class="formUrl" />
+            <button type="submit" class="dl-btn btn-video" id="btn-video">
+              Download Video MP4
+            </button>
+          </form>
+        </div>
+
+        <div id="loadingMsg" class="loading"></div>
       </div>
     </div>
 
     <script>
-      function isValidUrl(string) {
-        try {
-          new URL(string);
-          return true;
-        } catch (_) {
-          return false;
-        }
+      function openTab(evt, tabName) {
+        const contents = document.getElementsByClassName("tab-content");
+        for (let content of contents) content.classList.remove("active");
+
+        const btns = document.getElementsByClassName("tab-btn");
+        for (let btn of btns) btn.classList.remove("active");
+
+        document.getElementById(tabName).classList.add("active");
+        evt.currentTarget.classList.add("active");
       }
 
       async function handleUrlChange() {
         const url = document.getElementById("urlInput").value.trim();
         const previewContainer = document.getElementById("preview-container");
         const mediaContent = document.getElementById("media-content");
-        const formUrl = document.getElementById("formUrl");
+        const formUrls = document.querySelectorAll(".formUrl");
 
         if (url.startsWith("http")) {
           previewContainer.style.display = "block";
-          formUrl.value = url;
+          formUrls.forEach((input) => (input.value = url));
           mediaContent.innerHTML = "<p>Sedang mengambil preview...</p>";
 
           try {
@@ -107,28 +193,12 @@
             });
             const data = await response.json();
 
-            // 1. Logika Thumbnail Anti-Pecah (Proxy Sederhana via Google)
-            // Instagram sering memblokir hotlink, kita gunakan layanan favicon/images-weserv sebagai proxy
             let secureThumbnail = data.thumbnail;
             if (data.platform === "instagram") {
               secureThumbnail = `https://images.weserv.nl/?url=${encodeURIComponent(data.thumbnail)}`;
             }
 
-            let mediaHtml = "";
-
-            // 2. Tampilkan Thumbnail saja untuk semua (termasuk YouTube)
-            // agar tidak ada kotak hitam "Video tidak tersedia"
-            if (data.thumbnail) {
-              mediaHtml = `
-                    <div style="width:100%; max-width:450px; margin: 0 auto 15px auto; position:relative;">
-                        <img src="${secureThumbnail}" 
-                             alt="Preview"
-                             style="width:100%; border-radius:12px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); display:block; min-height:150px; background:#eee;"
-                             onerror="this.src='https://placehold.co/600x400?text=Preview+Tersedia'">
-                    </div>`;
-            }
-
-            // 3. Tampilkan Caption/Judul dan Platform
+            // Tampilkan Caption/Judul dan Platform
             let displayTitle = data.title;
 
             // Jika platform adalah Instagram, gunakan description (caption)
@@ -146,56 +216,45 @@
             }
 
             mediaContent.innerHTML = `
-              <div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
-                  ${mediaHtml}
-                  
-                  <h3 style="font-size: 16px; margin: 5px 0 15px 0; padding: 0 15px; color: #333; line-height: 1.4; font-weight: 500;">
-                      ${displayTitle}
-                  </h3>
-                  
-                  <span style="font-size:12px; color:white; background:#666; padding:5px 15px; border-radius:20px; font-weight: bold;">
-                      Platform: ${data.platform.charAt(0).toUpperCase() + data.platform.slice(1)}
-                  </span>
-
-                  <div style="margin-bottom: 25px;"></div>
+              <img src="${secureThumbnail}" onerror="this.src='https://placehold.co/600x400?text=Preview+Tersedia'">
+              <h3 style="font-size: 16px; margin: 5px 0 15px 0; padding: 0 15px; color: #333; line-height: 1.4; font-weight: 500;">${displayTitle}</h3>
+              <div style="margin-bottom: 20px;"> <span style="font-size:12px; color:white; background:#666; padding:5px 15px; border-radius:20px; font-weight: bold;">
+                  Platform: ${data.platform.charAt(0).toUpperCase() + data.platform.slice(1)}
+                </span>
               </div>
-          `;
+            `;
           } catch (error) {
             mediaContent.innerHTML =
-              "<p style='color:red;'>Gagal memuat preview. Link mungkin tidak didukung.</p>";
+              "<p style='color:red;'>Gagal memuat preview.</p>";
           }
         } else {
           previewContainer.style.display = "none";
         }
       }
 
-      function showLoading() {
-        const btn = document.querySelector('button[type="submit"]');
+      function showLoading(type) {
+        const btnId = type === "audio" ? "btn-audio" : "btn-video";
+        const btn = document.getElementById(btnId);
         const loadingMsg = document.getElementById("loadingMsg");
 
-        // Ubah status tombol
         btn.disabled = true;
         btn.innerText = "Memproses...";
         btn.style.background = "#888";
         loadingMsg.style.display = "block";
-        loadingMsg.innerHTML = "Sedang memproses audio... Mohon tunggu.";
+        loadingMsg.innerHTML =
+          "♻️ Sedang memproses file besar, mohon tunggu beberapa saat...";
 
-        // Trik: Gunakan interval untuk mengecek apakah file mulai diunduh
-        // Karena browser tidak memberi tahu kapan download 'selesai',
-        // kita beri feedback sukses setelah jeda waktu masuk akal.
         setTimeout(() => {
           btn.disabled = false;
-          btn.innerText = "Konversi Selesai! Klik lagi untuk yang lain";
-          btn.style.background = "#28a745"; // Hijau sukses
-          loadingMsg.innerHTML = "File sedang dikirim ke browser Anda.";
-
-          // Sembunyikan pesan setelah 5 detik
+          btn.innerText = "Selesai! Klik untuk download lagi";
+          btn.style.background = "#28a745";
           setTimeout(() => {
             loadingMsg.style.display = "none";
-            btn.innerText = "Konversi ke MP3";
+            btn.innerText =
+              type === "audio" ? "Konversi ke MP3" : "Download Video MP4";
             btn.style.background = "#cc0000";
           }, 5000);
-        }, 8000); // Estimasi 8 detik (bisa disesuaikan)
+        }, 12000);
       }
     </script>
   </body>

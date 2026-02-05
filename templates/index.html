@@ -4,28 +4,71 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Multi Downloader</title>
+    <link
+      rel="icon"
+      id="favicon"
+      href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📥</text></svg>"
+    />
     <style>
+      :root {
+        --bg-color: #f0f2f5;
+        --container-bg: #ffffff;
+        --text-primary: #333333;
+        --text-secondary: #666666;
+        --border-color: #eeeeee;
+        --input-bg: #ffffff;
+        --tab-inactive: #666666;
+      }
+
+      [data-theme="dark"] {
+        --bg-color: #18191a;
+        --container-bg: #242526;
+        --text-primary: #e4e6eb;
+        --text-secondary: #b0b3b8;
+        --border-color: #3e4042;
+        --input-bg: #3a3b3c;
+        --tab-inactive: #b0b3b8;
+      }
+
       body {
         font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
         text-align: center;
-        background-color: #f0f2f5;
+        background-color: var(--bg-color);
+        color: var(--text-primary);
         padding-top: 50px;
+        transition: all 0.3s ease;
       }
+
       .container {
-        background: white;
+        background: var(--container-bg);
         padding: 2rem;
         border-radius: 15px;
         display: inline-block;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-        max-width: 500px;
-        width: 90%;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        max-width: 500px; /* Batas maksimal di Desktop */
+        width: 90%; /* Fleksibel di layar kecil */
+        position: relative;
+        box-sizing: border-box; /* Penting: agar padding tidak menambah lebar elemen */
       }
-      /* Tab Styling */
+
+      /* Tombol Dark Mode */
+      .theme-toggle {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        cursor: pointer;
+        font-size: 20px;
+        background: none;
+        border: none;
+        outline: none;
+      }
+
       .tabs {
         display: flex;
         margin-bottom: 20px;
-        border-bottom: 2px solid #eee;
+        border-bottom: 2px solid var(--border-color);
       }
+
       .tab-btn {
         flex: 1;
         padding: 12px;
@@ -33,16 +76,18 @@
         background: none;
         border: none;
         font-weight: bold;
-        color: #666;
+        color: var(--tab-inactive);
         transition: 0.3s;
       }
+
       .tab-btn.active {
         color: #cc0000;
         border-bottom: 2px solid #cc0000;
       }
+
       .tab-content {
         display: none;
-        padding-top: 20px; /* Memberikan jarak antara info video dan tombol */
+        padding-top: 20px;
       }
 
       .tab-content.active {
@@ -53,10 +98,13 @@
         width: 85%;
         padding: 12px;
         margin-bottom: 20px;
-        border: 2px solid #eee;
+        border: 2px solid var(--border-color);
         border-radius: 8px;
         outline: none;
+        background-color: var(--input-bg);
+        color: var(--text-primary);
       }
+
       input:focus {
         border-color: #cc0000;
       }
@@ -65,6 +113,7 @@
         margin-top: 20px;
         display: none;
       }
+
       img {
         width: 100%;
         border-radius: 12px;
@@ -80,34 +129,113 @@
         border-radius: 8px;
         font-weight: bold;
         font-size: 16px;
-        margin-bottom: 10px; /* Jarak tambahan di bawah tombol */
+        margin-bottom: 10px;
       }
+
+      /* Tombol MP3 (Ungu) */
       .btn-audio {
-        background: #cc0000;
+        background: #8e44ad;
+        transition: all 0.3s ease;
       }
+
+      .btn-audio:hover {
+        background: #9b59b6;
+        transform: translateY(-2px); /* Efek sedikit terangkat */
+        box-shadow: 0 5px 15px rgba(142, 68, 173, 0.3);
+      }
+
+      /* Tombol Video (Biru Modern) */
       .btn-video {
         background: #007bff;
+        transition: all 0.3s ease;
+      }
+
+      .btn-video:hover {
+        background: #0056b3; /* Biru yang lebih gelap saat di-hover */
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3);
+      }
+
+      /* Tambahan: Efek saat tombol diklik (active) */
+      .dl-btn:active {
+        transform: translateY(0);
       }
 
       .loading {
         display: none;
-        color: #666;
+        color: var(--text-secondary);
         margin-top: 15px;
         font-size: 14px;
       }
 
-      /* Tambahkan ini agar judul panjang tetap terlihat rapi dan tidak terpotong */
       #media-content h3 {
         display: block;
-        word-wrap: break-word; /* Memastikan kata panjang tidak keluar box */
-        overflow: visible;
-        height: auto;
-        max-height: none;
+        word-wrap: break-word;
+        /* Memastikan warna teks mengikuti mode (Putih di Dark, Hitam di Light) */
+        color: var(--text-primary) !important;
+        font-size: 16px;
+        margin: 15px 0;
+        padding: 0 15px;
+        line-height: 1.4;
+        font-weight: 600; /* Sedikit lebih tebal agar mudah dibaca */
+      }
+
+      /* Tambahan untuk teks platform agar tidak terlalu redup */
+      .platform-badge {
+        display: inline-block;
+        margin-bottom: 20px;
+        font-size: 12px;
+        color: #ffffff; /* Tetap putih agar kontras dengan background abu-abu */
+        background: #555;
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-weight: bold;
+      }
+
+      /* Tampilan untuk Tablet (Layar di bawah 768px) */
+      @media (max-width: 768px) {
+        body {
+          padding-top: 20px; /* Jarak atas lebih kecil di layar kecil */
+        }
+        .container {
+          width: 95%; /* Container lebih lebar agar tidak banyak ruang kosong */
+          padding: 1.5rem;
+        }
+        h1 {
+          font-size: 1.5rem; /* Ukuran judul lebih kecil */
+        }
+      }
+
+      /* Tampilan untuk Handphone (Layar di bawah 480px) */
+      @media (max-width: 480px) {
+        .container {
+          padding: 1rem;
+          border-radius: 10px; /* Radius sedikit lebih tajam */
+        }
+        input {
+          width: 90%; /* Input hampir memenuhi layar */
+          font-size: 14px;
+        }
+        .tab-btn {
+          padding: 10px 5px;
+          font-size: 13px; /* Teks tombol tab lebih kecil agar tidak pecah baris */
+        }
+        button.dl-btn {
+          font-size: 14px;
+          padding: 10px;
+        }
+        #media-content h3 {
+          font-size: 14px; /* Judul preview lebih kecil di HP */
+          padding: 0 5px;
+        }
       }
     </style>
   </head>
   <body>
     <div class="container">
+      <button class="theme-toggle" onclick="toggleTheme()" id="theme-icon">
+        🌙
+      </button>
       <h1 style="margin-top: 0">All-in-One Downloader</h1>
 
       <div class="tabs">
@@ -163,6 +291,36 @@
     </div>
 
     <script>
+      // Cek preferensi tema sebelumnya dari local storage
+      const currentTheme = localStorage.getItem("theme") || "light";
+      document.documentElement.setAttribute("data-theme", currentTheme);
+      updateIcon(currentTheme);
+      updateFavicon(currentTheme);
+
+      function toggleTheme() {
+        let theme = document.documentElement.getAttribute("data-theme");
+        let newTheme = theme === "light" ? "dark" : "light";
+
+        document.documentElement.setAttribute("data-theme", newTheme);
+        localStorage.setItem("theme", newTheme);
+
+        updateIcon(newTheme); // Untuk update icon matahari/bulan di tombol
+        updateFavicon(newTheme); // Untuk update emoji di tab browser
+      }
+
+      function updateIcon(theme) {
+        const icon = document.getElementById("theme-icon");
+        icon.innerText = theme === "light" ? "🌙" : "☀️";
+      }
+
+      // Opsional: Jika ingin mengganti emoji favicon via JavaScript saat toggle klik
+      function updateFavicon(theme) {
+        const favicon = document.getElementById("favicon");
+        // Anda bisa memilih emoji berbeda untuk tiap mode
+        const emoji = theme === "light" ? "📥" : "💾";
+        favicon.href = `data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>${emoji}</text></svg>`;
+      }
+
       function openTab(evt, tabName) {
         const contents = document.getElementsByClassName("tab-content");
         for (let content of contents) content.classList.remove("active");
@@ -217,10 +375,9 @@
 
             mediaContent.innerHTML = `
               <img src="${secureThumbnail}" onerror="this.src='https://placehold.co/600x400?text=Preview+Tersedia'">
-              <h3 style="font-size: 16px; margin: 5px 0 15px 0; padding: 0 15px; color: #333; line-height: 1.4; font-weight: 500;">${displayTitle}</h3>
-              <div style="margin-bottom: 20px;"> <span style="font-size:12px; color:white; background:#666; padding:5px 15px; border-radius:20px; font-weight: bold;">
+              <h3>${displayTitle}</h3>
+              <div class="platform-badge">
                   Platform: ${data.platform.charAt(0).toUpperCase() + data.platform.slice(1)}
-                </span>
               </div>
             `;
           } catch (error) {
@@ -252,7 +409,7 @@
             loadingMsg.style.display = "none";
             btn.innerText =
               type === "audio" ? "Konversi ke MP3" : "Download Video MP4";
-            btn.style.background = "#cc0000";
+            btn.style.background = type === "audio" ? "#8e44ad" : "#007bff";
           }, 5000);
         }, 12000);
       }

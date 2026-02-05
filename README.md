@@ -1,14 +1,11 @@
 # 📥 Multi Downloader (YouTube, Instagram, & More)
 
-An efficient and responsive Flask-based web application that allows users to download audio (MP3) and video (MP4) from various social media platforms. Powered by yt-dlp, this tool features a clean UI with dark mode support and automated file cleanup.
+An efficient and responsive Flask-based web application that allows users to download audio (MP3) and video (MP4) from various social media platforms. Powered by `yt-dlp`, this tool features a clean UI with dark mode support and automated file cleanup.
 
 ## ✨ Key Features
 
 - **Platform Support:** Download content from YouTube, Instagram, and other major platforms supported by yt-dlp.
-- **Audio & Video Formats: \* MP3:** High-quality 192kbps audio extraction.
-
-* **MP4:** Downloads the best available video and audio merged.
-
+- **High-Quality Downloads**: Support for **MP3 (192kbps)** audio extraction and **MP4** video downloads with the best available quality merged automatically.
 - **Smart Metadata:** Automatically extracts video titles or Instagram captions to use as filenames.
 - **Live Preview:** Fetches thumbnails and titles/descriptions before you start the download.
 - **Dark Mode Support:** Toggle between light and dark themes with persistent settings.

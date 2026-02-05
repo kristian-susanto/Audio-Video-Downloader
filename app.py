@@ -1,7 +1,9 @@
 from flask import Flask, render_template, request, send_file, after_this_request, jsonify
+from apscheduler.schedulers.background import BackgroundScheduler
 import yt_dlp
-import os
 import re
+import time
+import os
 
 app = Flask(__name__)
 
@@ -9,6 +11,12 @@ app = Flask(__name__)
 DOWNLOAD_FOLDER = 'downloads'
 if not os.path.exists(DOWNLOAD_FOLDER):
     os.makedirs(DOWNLOAD_FOLDER)
+
+# Inisialisasi Scheduler
+scheduler = BackgroundScheduler()
+# Jalankan cleanup_downloads setiap 30 menit
+scheduler.add_job(func=cleanup_downloads, trigger="interval", minutes=30)
+scheduler.start()
 
 def sanitize_filename(filename):
     """Menghapus karakter yang tidak diperbolehkan dalam nama file."""
@@ -175,6 +183,27 @@ def download_video():
     except Exception as e:
         return f"Terjadi kesalahan: {str(e)}", 500
         
+def cleanup_downloads():
+    """Fungsi untuk menghapus semua file di folder downloads"""
+    print("Menjalankan pembersihan rutin folder downloads...")
+    folder = DOWNLOAD_FOLDER
+    now = time.time()
+    
+    try:
+        for filename in os.listdir(folder):
+            file_path = os.path.join(folder, filename)
+            # Opsional: Hanya hapus file yang sudah berumur lebih dari 30 menit
+            # agar tidak menghapus file yang sedang didownload user lain
+            if os.path.isfile(file_path):
+                if os.stat(file_path).st_mtime < now - 1800: # 1800 detik = 30 menit
+                    os.remove(file_path)
+                    print(f"File dihapus: {filename}")
+    except Exception as e:
+        print(f"Error saat pembersihan: {e}")
+
 if __name__ == '__main__':
-    # Jalankan aplikasi
-    app.run(debug=True, port=5000)
+    try:
+        # use_reloader=False mencegah Flask restart sendiri saat file berubah
+        app.run(debug=True, port=5000, use_reloader=False)
+    except (KeyboardInterrupt, SystemExit):
+        scheduler.shutdown()

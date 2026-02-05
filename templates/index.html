@@ -33,8 +33,20 @@
           style="width: 100%; padding: 10px; box-sizing: border-box"
         />
         <select id="quality" style="width: 100%; margin: 10px 0; padding: 10px">
-          <option value="bestaudio">Audio MP3 (Terbaik)</option>
-          <option value="best">Video + Audio (Default)</option>
+          <optgroup label="Video">
+            <option value="best">Video + Audio (Kualitas Terbaik)</option>
+          </optgroup>
+          <optgroup label="Audio MP3">
+            <option value="64">Audio MP3 - 64 kbps (Hemat Kuota)</option>
+            <option value="128">Audio MP3 - 128 kbps (Standar)</option>
+            <option value="192">Audio MP3 - 192 kbps (Bagus)</option>
+            <option value="256">Audio MP3 - 256 kbps (Sangat Bagus)</option>
+            <option value="320">Audio MP3 - 320 kbps (High Quality)</option>
+          </optgroup>
+          <optgroup label="Lossless (Kualitas Studio)">
+            <option value="wav">WAV (Uncompressed)</option>
+            <option value="flac">FLAC (Lossless)</option>
+          </optgroup>
         </select>
         <button
           onclick="startDownload()"

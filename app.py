@@ -30,17 +30,45 @@ def process():
     video_url = data.get('url')
     quality = data.get('quality')
 
+    # Opsi dasar
     ydl_opts = {
-        'format': quality,
         'outtmpl': f'{DOWNLOAD_FOLDER}/%(title)s.%(ext)s',
         'progress_hooks': [progress_hook],
     }
 
+    # Logika Penentuan Format
+    if quality == 'best':
+        # Default Video + Audio
+        ydl_opts['format'] = 'bestvideo+bestaudio/best'
+    elif quality in ['wav', 'flac']:
+        # Format Lossless
+        ydl_opts['format'] = 'bestaudio/best'
+        ydl_opts['postprocessors'] = [{
+            'key': 'FFmpegExtractAudio',
+            'preferredcodec': quality,
+        }]
+    else:
+        # Format MP3 dengan bitrate tertentu (64, 128, 192, 256, 320)
+        ydl_opts['format'] = 'bestaudio/best'
+        ydl_opts['postprocessors'] = [{
+            'key': 'FFmpegExtractAudio',
+            'preferredcodec': 'mp3',
+            'preferredquality': quality,
+        }]
+
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(video_url, download=True)
-            filename = os.path.basename(ydl.prepare_filename(info))
-            return jsonify({'success': True, 'filename': filename})
+            # Karena post-processing mengubah ekstensi file (misal dari .m4a ke .mp3),
+            # kita perlu mengambil nama file akhir yang benar.
+            filename = ydl.prepare_filename(info)
+            
+            # Jika audio dikonversi, ganti ekstensinya sesuai target
+            if quality != 'best':
+                ext = 'mp3' if quality.isdigit() else quality
+                filename = os.path.splitext(filename)[0] + "." + ext
+                
+            return jsonify({'success': True, 'filename': os.path.basename(filename)})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
 

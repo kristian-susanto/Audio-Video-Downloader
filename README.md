@@ -61,7 +61,7 @@ pip install -r requirements.txt
 Or install manually:
 
 ```bash
-pip install flask yt-dlp apscheduler
+pip install Flask yt-dlp APScheduler Flask-SocketIO eventlet
 ```
 
 ### 4. Run the Application

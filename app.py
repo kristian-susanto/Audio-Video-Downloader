@@ -12,12 +12,6 @@ DOWNLOAD_FOLDER = 'downloads'
 if not os.path.exists(DOWNLOAD_FOLDER):
     os.makedirs(DOWNLOAD_FOLDER)
 
-# Inisialisasi Scheduler
-scheduler = BackgroundScheduler()
-# Jalankan cleanup_downloads setiap 30 menit
-scheduler.add_job(func=cleanup_downloads, trigger="interval", minutes=30)
-scheduler.start()
-
 def sanitize_filename(filename):
     """Menghapus karakter yang tidak diperbolehkan dalam nama file."""
     return re.sub(r'[\\/*?:"<>|]', "", filename)
@@ -200,6 +194,12 @@ def cleanup_downloads():
                     print(f"File dihapus: {filename}")
     except Exception as e:
         print(f"Error saat pembersihan: {e}")
+
+# Inisialisasi Scheduler
+scheduler = BackgroundScheduler()
+# Jalankan cleanup_downloads setiap 30 menit
+scheduler.add_job(func=cleanup_downloads, trigger="interval", minutes=30)
+scheduler.start()
 
 if __name__ == '__main__':
     try:

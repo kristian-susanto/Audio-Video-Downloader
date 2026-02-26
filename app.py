@@ -12,6 +12,10 @@ DOWNLOAD_FOLDER = 'downloads'
 if not os.path.exists(DOWNLOAD_FOLDER):
     os.makedirs(DOWNLOAD_FOLDER)
 
+# Mendapatkan path folder ffmpeg yang ada di dalam root project
+# os.path.abspath memastikan path terbaca dengan benar oleh sistem
+FFMPEG_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'ffmpeg')
+
 def sanitize_filename(filename):
     """Menghapus karakter yang tidak diperbolehkan dalam nama file."""
     return re.sub(r'[\\/*?:"<>|]', "", filename)
@@ -29,6 +33,7 @@ def get_info():
         ydl_opts = {
             'quiet': True, 
             'noplaylist': True,
+            'ffmpeg_location': FFMPEG_PATH, # Tambahkan ini agar info extractor lancar
             'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
         }
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -55,6 +60,7 @@ def download():
         ydl_info_opts = {
             'quiet': True,
             'no_warnings': True,
+            'ffmpeg_location': FFMPEG_PATH,
         }
         
         with yt_dlp.YoutubeDL(ydl_info_opts) as ydl:
@@ -81,6 +87,7 @@ def download():
         # 2. Proses Download
         ydl_opts = {
             'format': 'bestaudio/best',
+            'ffmpeg_location': FFMPEG_PATH, # Memberitahu lokasi ffmpeg
             'postprocessors': [{
                 'key': 'FFmpegExtractAudio',
                 'preferredcodec': 'mp3',
@@ -123,7 +130,8 @@ def download_video():
         return "URL tidak boleh kosong!", 400
 
     try:
-        with yt_dlp.YoutubeDL({'quiet': True}) as ydl:
+        # Tambahkan ffmpeg_location di sini juga untuk extraction
+        with yt_dlp.YoutubeDL({'quiet': True, 'ffmpeg_location': FFMPEG_PATH}) as ydl:
             info = ydl.extract_info(url, download=False)
             video_id = info.get('id')
             platform = info.get('extractor_key', '').lower()
@@ -145,6 +153,7 @@ def download_video():
 
         ydl_opts = {
             'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
+            'ffmpeg_location': FFMPEG_PATH, # Untuk menggabungkan Video + Audio
             'outtmpl': os.path.join(DOWNLOAD_FOLDER, f'{video_id}_video.%(ext)s'),
             'quiet': True,
             'noplaylist': True,

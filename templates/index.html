@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="id">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -45,13 +45,12 @@
         border-radius: 15px;
         display: inline-block;
         box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-        max-width: 500px; /* Batas maksimal di Desktop */
-        width: 90%; /* Fleksibel di layar kecil */
+        max-width: 500px;
+        width: 90%;
         position: relative;
-        box-sizing: border-box; /* Penting: agar padding tidak menambah lebar elemen */
+        box-sizing: border-box;
       }
 
-      /* Tombol Dark Mode */
       .theme-toggle {
         position: absolute;
         top: 15px;
@@ -132,7 +131,6 @@
         margin-bottom: 10px;
       }
 
-      /* Tombol MP3 (Ungu) */
       .btn-audio {
         background: #8e44ad;
         transition: all 0.3s ease;
@@ -140,23 +138,21 @@
 
       .btn-audio:hover {
         background: #9b59b6;
-        transform: translateY(-2px); /* Efek sedikit terangkat */
+        transform: translateY(-2px);
         box-shadow: 0 5px 15px rgba(142, 68, 173, 0.3);
       }
 
-      /* Tombol Video (Biru Modern) */
       .btn-video {
         background: #007bff;
         transition: all 0.3s ease;
       }
 
       .btn-video:hover {
-        background: #0056b3; /* Biru yang lebih gelap saat di-hover */
+        background: #0056b3;
         transform: translateY(-2px);
         box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3);
       }
 
-      /* Tambahan: Efek saat tombol diklik (active) */
       .dl-btn:active {
         transform: translateY(0);
       }
@@ -171,61 +167,57 @@
       #media-content h3 {
         display: block;
         word-wrap: break-word;
-        /* Memastikan warna teks mengikuti mode (Putih di Dark, Hitam di Light) */
         color: var(--text-primary) !important;
         font-size: 16px;
         margin: 15px 0;
         padding: 0 15px;
         line-height: 1.4;
-        font-weight: 600; /* Sedikit lebih tebal agar mudah dibaca */
+        font-weight: 600;
       }
 
-      /* Tambahan untuk teks platform agar tidak terlalu redup */
       .platform-badge {
         display: inline-block;
         margin-bottom: 20px;
         font-size: 12px;
-        color: #ffffff; /* Tetap putih agar kontras dengan background abu-abu */
+        color: #ffffff;
         background: #555;
         padding: 5px 15px;
         border-radius: 20px;
         font-weight: bold;
       }
 
-      /* Tampilan untuk Tablet (Layar di bawah 768px) */
       @media (max-width: 768px) {
         body {
-          padding-top: 20px; /* Jarak atas lebih kecil di layar kecil */
+          padding-top: 20px;
         }
         .container {
-          width: 95%; /* Container lebih lebar agar tidak banyak ruang kosong */
+          width: 95%;
           padding: 1.5rem;
         }
         h1 {
-          font-size: 1.5rem; /* Ukuran judul lebih kecil */
+          font-size: 1.5rem;
         }
       }
 
-      /* Tampilan untuk Handphone (Layar di bawah 480px) */
       @media (max-width: 480px) {
         .container {
           padding: 1rem;
-          border-radius: 10px; /* Radius sedikit lebih tajam */
+          border-radius: 10px;
         }
         input {
-          width: 90%; /* Input hampir memenuhi layar */
+          width: 90%;
           font-size: 14px;
         }
         .tab-btn {
           padding: 10px 5px;
-          font-size: 13px; /* Teks tombol tab lebih kecil agar tidak pecah baris */
+          font-size: 13px;
         }
         button.dl-btn {
           font-size: 14px;
           padding: 10px;
         }
         #media-content h3 {
-          font-size: 14px; /* Judul preview lebih kecil di HP */
+          font-size: 14px;
           padding: 0 5px;
         }
       }
@@ -253,7 +245,7 @@
       <input
         type="text"
         id="urlInput"
-        placeholder="Tempel link video/post di sini..."
+        placeholder="Paste video/post link here..."
         oninput="handleUrlChange()"
       />
 
@@ -268,7 +260,7 @@
           >
             <input type="hidden" name="url" class="formUrl" />
             <button type="submit" class="dl-btn btn-audio" id="btn-audio">
-              Konversi ke MP3
+              Convert to MP3
             </button>
           </form>
         </div>
@@ -291,7 +283,6 @@
     </div>
 
     <script>
-      // Cek preferensi tema sebelumnya dari local storage
       const currentTheme = localStorage.getItem("theme") || "light";
       document.documentElement.setAttribute("data-theme", currentTheme);
       updateIcon(currentTheme);
@@ -304,8 +295,8 @@
         document.documentElement.setAttribute("data-theme", newTheme);
         localStorage.setItem("theme", newTheme);
 
-        updateIcon(newTheme); // Untuk update icon matahari/bulan di tombol
-        updateFavicon(newTheme); // Untuk update emoji di tab browser
+        updateIcon(newTheme);
+        updateFavicon(newTheme);
       }
 
       function updateIcon(theme) {
@@ -313,10 +304,8 @@
         icon.innerText = theme === "light" ? "🌙" : "☀️";
       }
 
-      // Opsional: Jika ingin mengganti emoji favicon via JavaScript saat toggle klik
       function updateFavicon(theme) {
         const favicon = document.getElementById("favicon");
-        // Anda bisa memilih emoji berbeda untuk tiap mode
         const emoji = theme === "light" ? "📥" : "💾";
         favicon.href = `data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>${emoji}</text></svg>`;
       }
@@ -341,7 +330,7 @@
         if (url.startsWith("http")) {
           previewContainer.style.display = "block";
           formUrls.forEach((input) => (input.value = url));
-          mediaContent.innerHTML = "<p>Sedang mengambil preview...</p>";
+          mediaContent.innerHTML = "<p>Fetching preview...</p>";
 
           try {
             const response = await fetch("/get_info", {
@@ -356,25 +345,21 @@
               secureThumbnail = `https://images.weserv.nl/?url=${encodeURIComponent(data.thumbnail)}`;
             }
 
-            // Tampilkan Caption/Judul dan Platform
             let displayTitle = data.title;
 
-            // Jika platform adalah Instagram, gunakan description (caption)
-            // Jika description kosong, baru gunakan title default
             if (data.platform === "instagram") {
               displayTitle =
                 data.description && data.description.trim() !== ""
                   ? data.description
                   : "Instagram Post";
 
-              // Opsional: Batasi panjang caption agar tidak terlalu panjang di preview
               if (displayTitle.length > 200) {
                 displayTitle = displayTitle.substring(0, 197) + "...";
               }
             }
 
             mediaContent.innerHTML = `
-              <img src="${secureThumbnail}" onerror="this.src='https://placehold.co/600x400?text=Preview+Tersedia'">
+              <img src="${secureThumbnail}" onerror="this.src='https://placehold.co/600x400?text=Preview+Available'">
               <h3>${displayTitle}</h3>
               <div class="platform-badge">
                   Platform: ${data.platform.charAt(0).toUpperCase() + data.platform.slice(1)}
@@ -382,7 +367,7 @@
             `;
           } catch (error) {
             mediaContent.innerHTML =
-              "<p style='color:red;'>Gagal memuat preview.</p>";
+              "<p style='color:red;'>Failed to load preview.</p>";
           }
         } else {
           previewContainer.style.display = "none";
@@ -395,20 +380,20 @@
         const loadingMsg = document.getElementById("loadingMsg");
 
         btn.disabled = true;
-        btn.innerText = "Memproses...";
+        btn.innerText = "Processing...";
         btn.style.background = "#888";
         loadingMsg.style.display = "block";
         loadingMsg.innerHTML =
-          "⌛ Sedang memproses file besar, mohon tunggu beberapa saat...";
+          "⌛ Processing large file, please wait a moment...";
 
         setTimeout(() => {
           btn.disabled = false;
-          btn.innerText = "Selesai! Klik untuk download lagi";
+          btn.innerText = "Done! Click to download again";
           btn.style.background = "#28a745";
           setTimeout(() => {
             loadingMsg.style.display = "none";
             btn.innerText =
-              type === "audio" ? "Konversi ke MP3" : "Download Video MP4";
+              type === "audio" ? "Convert to MP3" : "Download Video MP4";
             btn.style.background = type === "audio" ? "#8e44ad" : "#007bff";
           }, 5000);
         }, 12000);

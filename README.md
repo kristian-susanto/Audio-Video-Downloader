@@ -18,9 +18,6 @@ An efficient and responsive Flask-based web application that allows users to dow
 Audio-Video-Downloader/
 │
 ├── app.py              # Flask backend and downloader logic
-├── ffmpeg/
-│   ├── ffmpeg.exe
-│   └── ffprobe.exe
 ├── downloads/          # Temporary storage for processed files
 ├── templates/
 │ └── index.html        # Frontend (HTML/CSS/JS)
